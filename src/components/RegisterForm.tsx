@@ -5,35 +5,67 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types";
 
 const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userType, setUserType] = useState<"user" | "contentManager">("user");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     // Simple validation
     if (!name || !email || !password) {
       setError("All fields are required");
+      setIsLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setIsLoading(false);
       return;
     }
 
-    // In a real app, you would register the user in your backend
-    // For this demo, we'll just show success and navigate
-    alert(`Successfully registered as ${userType}`);
-    navigate('/login');
+    setTimeout(() => {
+      // Create new user
+      const newUser: User = {
+        id: Date.now().toString(),
+        name,
+        email,
+        role: userType
+      };
+
+      // Get existing registered users or initialize empty array
+      const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      
+      // Add new user to array
+      const updatedUsers = [...existingUsers, newUser];
+      
+      // Save back to localStorage
+      localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+      
+      // Show success message
+      toast({
+        title: "Registration successful",
+        description: "You can now log in with your new account",
+      });
+      
+      // Navigate to login page
+      navigate('/login');
+      
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -106,8 +138,8 @@ const RegisterForm: React.FC = () => {
             </RadioGroup>
           </div>
           
-          <Button type="submit" className="w-full bg-movie-primary hover:bg-movie-secondary">
-            Register
+          <Button type="submit" className="w-full bg-movie-primary hover:bg-movie-secondary" disabled={isLoading}>
+            {isLoading ? "Registering..." : "Register"}
           </Button>
           
           <p className="text-sm text-center">

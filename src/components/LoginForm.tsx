@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { users } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types";
 
 interface LoginFormProps {
   userType: 'user' | 'contentManager';
@@ -19,6 +20,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, title }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
+
+  // Load registered users from localStorage on component mount
+  useEffect(() => {
+    const storedUsers = localStorage.getItem('registeredUsers');
+    if (storedUsers) {
+      setRegisteredUsers(JSON.parse(storedUsers));
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +44,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ userType, title }) => {
 
     // Simulate API delay
     setTimeout(() => {
-      // Mock authentication logic
-      const user = users.find(u => u.email === email && u.role === userType);
+      // Check against mock data first
+      const mockUser = users.find(u => u.email === email && u.role === userType);
+      
+      // Then check against registered users
+      const registeredUser = registeredUsers.find(u => 
+        u.email === email && u.role === userType
+      );
+      
+      const user = mockUser || registeredUser;
       
       if (user) {
         // Store user in localStorage
