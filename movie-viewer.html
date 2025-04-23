@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flick Critic Corner - Movie Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff4d4d, #f9cb28);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .movie-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .movie-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        .movie-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+        .movie-content {
+            padding: 20px;
+        }
+        .movie-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff9a3c;
+        }
+        .movie-description {
+            color: #dddddd;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .movie-rating {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .stars {
+            display: flex;
+            margin-right: 10px;
+        }
+        .star {
+            color: #f9cb28;
+            font-size: 1.2rem;
+            margin-right: 3px;
+        }
+        .rating-value {
+            font-weight: bold;
+            color: #f9cb28;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Flick Critic Corner</h1>
+        <p>Your ultimate destination for movie reviews</p>
+    </header>
+
+    <div class="movie-grid">
+        <div class="movie-card">
+            <img src="file:///C:/demo_movie/Avatar.jpg" alt="Avatar" class="movie-image">
+            <div class="movie-content">
+                <div class="movie-title">Avatar</div>
+                <div class="movie-description">A paraplegic Marine dispatched to the moon Pandora on a unique mission becomes torn between following his orders and protecting the world he feels is his home.</div>
+                <div class="movie-rating">
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <span class="rating-value">4.5/5</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <img src="file:///C:/demo_movie/Black Panther.jpg" alt="Black Panther" class="movie-image">
+            <div class="movie-content">
+                <div class="movie-title">Black Panther</div>
+                <div class="movie-description">T'Challa, heir to the hidden but advanced kingdom of Wakanda, must step forward to lead his people into a new future and must confront a challenger from his country's past.</div>
+                <div class="movie-rating">
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <span class="rating-value">4.6/5</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <img src="file:///C:/demo_movie/Spiderman.jpg" alt="Spiderman" class="movie-image">
+            <div class="movie-content">
+                <div class="movie-title">Spiderman</div>
+                <div class="movie-description">After being bitten by a genetically-modified spider, a shy teenager gains spider-like abilities that he uses to fight injustice as a masked superhero and face a vengeful enemy.</div>
+                <div class="movie-rating">
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <span class="rating-value">4.4/5</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <img src="file:///C:/demo_movie/Archer.jpg" alt="Archer" class="movie-image">
+            <div class="movie-content">
+                <div class="movie-title">Archer</div>
+                <div class="movie-description">Covert black ops and espionage take a back seat to zany personalities and relationships between secret agents and drones.</div>
+                <div class="movie-rating">
+                    <div class="stars">
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                        <span class="star">★</span>
+                    </div>
+                    <span class="rating-value">4.3/5</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

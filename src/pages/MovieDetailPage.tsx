@@ -1,14 +1,12 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import ReviewCard from "@/components/ReviewCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { movies, reviews as mockReviews } from "@/data/mockData";
 import { Movie, Review, User } from "@/types";
-import { StarIcon } from "lucide-react";
+import { StarIcon, Loader2, AlertCircle } from "lucide-react";
+import { movieApi, reviewApi } from "@/services/api";
 
 const MovieDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +15,9 @@ const MovieDetailPage: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Load user from localStorage on mount
   useEffect(() => {
@@ -28,21 +29,36 @@ const MovieDetailPage: React.FC = () => {
         console.error("Error parsing user data");
       }
     }
-  }, []);
-
-  // Fetch movie and review data based on ID
-  useEffect(() => {
+    
+    // Fetch movie and review data
     if (id) {
-      const foundMovie = movies.find(m => m.id === id);
-      
-      if (foundMovie) {
-        setMovie(foundMovie);
-        setReviews(mockReviews.filter(r => r.movieId === id));
-      } else {
-        navigate('/not-found');
-      }
+      fetchMovieData(id);
     }
-  }, [id, navigate]);
+  }, [id]);
+
+  // Fetch movie and review data
+  const fetchMovieData = async (movieId: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const movieData = await movieApi.getById(movieId);
+      if (!movieData) {
+        navigate('/not-found');
+        return;
+      }
+      
+      setMovie(movieData);
+      
+      const reviewsData = await reviewApi.getByMovieId(movieId);
+      setReviews(reviewsData);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load movie data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle logout
   const handleLogout = () => {
@@ -51,11 +67,15 @@ const MovieDetailPage: React.FC = () => {
   };
 
   // Handle submitting a new review
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!currentUser) {
       alert("Please login to submit a review");
+      return;
+    }
+    
+    if (!movie) {
       return;
     }
     
@@ -64,21 +84,40 @@ const MovieDetailPage: React.FC = () => {
       return;
     }
     
-    // In a real app, this would send data to your API
-    const newReviewObject: Review = {
-      id: `${Date.now()}`,
-      movieId: movie?.id || "",
-      userId: currentUser.id,
-      username: currentUser.name,
-      rating: newReview.rating,
-      comment: newReview.comment,
-      date: new Date().toISOString().split('T')[0]
-    };
+    setSubmitting(true);
     
-    // Update local state
-    setReviews([newReviewObject, ...reviews]);
-    setNewReview({ rating: 5, comment: "" });
-    alert("Review submitted successfully!");
+    try {
+      const reviewData = {
+        movieId: movie.id,
+        userId: currentUser.id,
+        username: currentUser.name,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: new Date().toISOString().split('T')[0]
+      };
+      
+      const createdReview = await reviewApi.create(reviewData);
+      
+      if (createdReview) {
+        // Refresh reviews
+        const updatedReviews = await reviewApi.getByMovieId(movie.id);
+        setReviews(updatedReviews);
+        
+        // Refresh movie to get updated rating
+        const updatedMovie = await movieApi.getById(movie.id);
+        if (updatedMovie) {
+          setMovie(updatedMovie);
+        }
+        
+        // Reset form
+        setNewReview({ rating: 5, comment: "" });
+      }
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      alert("Failed to submit review. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Create star rating UI
@@ -105,12 +144,35 @@ const MovieDetailPage: React.FC = () => {
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white flex justify-center items-center">
+        <Loader2 className="h-12 w-12 animate-spin text-yellow-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white flex flex-col justify-center items-center p-4">
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold mb-2">Error Loading Movie</h2>
+        <p className="text-gray-400 mb-4 text-center">{error}</p>
+        <Link to="/">
+          <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   if (!movie) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 text-white">
       <Header 
         isLoggedIn={!!currentUser} 
         userRole={currentUser?.role}
@@ -118,13 +180,13 @@ const MovieDetailPage: React.FC = () => {
       />
       
       <main className="container mx-auto px-4 py-8">
-        <Link to="/" className="text-movie-primary hover:underline mb-4 inline-block">
-          &larr; Back to Movies
+        <Link to="/" className="text-yellow-500 hover:text-yellow-400 mb-6 inline-flex items-center gap-1">
+          <span>←</span> Back to Movies
         </Link>
         
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* Movie poster */}
-          <div className="aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden">
+          <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden shadow-xl">
             <img 
               src={movie.imageUrl} 
               alt={movie.title} 
@@ -134,19 +196,25 @@ const MovieDetailPage: React.FC = () => {
           
           {/* Movie details */}
           <div className="md:col-span-2">
-            <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
+            <h1 className="text-4xl font-bold mb-3 text-gradient bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-600">
+              {movie.title}
+            </h1>
             
-            <div className="flex items-center gap-1 mb-4">
+            <div className="flex items-center gap-2 mb-6 bg-gray-800 inline-block py-2 px-4 rounded-full">
               <StarIcon className="h-5 w-5 fill-yellow-400 stroke-yellow-400" />
-              <span className="font-medium">Average Rating: {movie.averageRating.toFixed(1)}</span>
+              <span className="font-medium text-lg">{movie.averageRating.toFixed(1)}</span>
+              <span className="text-gray-400">({reviews.length} reviews)</span>
             </div>
             
-            <p className="mb-6 text-gray-700 dark:text-gray-300">{movie.description}</p>
+            <div className="mb-8 p-6 bg-gray-800 rounded-lg border border-gray-700">
+              <h2 className="text-xl font-semibold mb-3 text-white">Synopsis</h2>
+              <p className="text-gray-300 leading-relaxed">{movie.description}</p>
+            </div>
             
             {/* New review form for logged in users */}
             {currentUser ? (
-              <div className="bg-white dark:bg-card p-4 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">Write a Review</h2>
+              <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
+                <h2 className="text-xl font-semibold mb-4 text-white">Write a Review</h2>
                 <form onSubmit={handleReviewSubmit}>
                   <StarRating />
                   
@@ -154,19 +222,32 @@ const MovieDetailPage: React.FC = () => {
                     value={newReview.comment}
                     onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                     placeholder="Share your thoughts about this movie..."
-                    className="mb-4"
+                    className="mb-4 bg-gray-900 border-gray-700 text-white placeholder:text-gray-500"
                   />
                   
-                  <Button type="submit" className="bg-movie-primary hover:bg-movie-secondary">
-                    Submit Review
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-black"
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Review"
+                    )}
                   </Button>
                 </form>
               </div>
             ) : (
-              <div className="bg-gray-50 dark:bg-card p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
-                <p className="mb-3">Please login to write a review</p>
+              <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 text-center">
+                <p className="mb-3 text-gray-300">Please login to write a review</p>
                 <Link to="/login">
-                  <Button variant="outline">Login</Button>
+                  <Button variant="outline" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">
+                    Login to Review
+                  </Button>
                 </Link>
               </div>
             )}
@@ -174,23 +255,38 @@ const MovieDetailPage: React.FC = () => {
         </div>
         
         {/* Reviews section */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Reviews ({reviews.length})</h2>
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6 pb-2 border-b border-gray-700">
+            Reviews <span className="text-gray-400">({reviews.length})</span>
+          </h2>
           
           {reviews.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {reviews.map(review => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">No reviews yet. Be the first to review!</p>
+            <div className="text-center py-12 bg-gray-800 rounded-lg border border-gray-700">
+              <p className="text-gray-400 mb-3">No reviews yet.</p>
+              {currentUser ? (
+                <p className="text-yellow-500">Be the first to share your thoughts!</p>
+              ) : (
+                <Link to="/login">
+                  <Button variant="outline" className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black">
+                    Login to Write a Review
+                  </Button>
+                </Link>
+              )}
+            </div>
           )}
         </div>
       </main>
       
-      <footer className="bg-black text-white py-4 text-center text-sm">
-        © 2023 Movie Hub. All rights reserved.
+      <footer className="bg-black text-gray-400 py-6 text-center border-t border-gray-800">
+        <div className="container mx-auto">
+          <p>© 2023 Flick Critic Corner. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   );

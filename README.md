@@ -1,73 +1,100 @@
-# Welcome to your Lovable project
+# Flick Critic Corner
 
-## Project info
+A full-stack movie review application with a Spring Boot backend and React frontend.
 
-**URL**: https://lovable.dev/projects/3957edd8-1292-47da-b763-625b5c4a36dd
+## Overview
 
-## How can I edit this code?
+Flick Critic Corner allows users to browse movies, read reviews, and write their own reviews after creating an account. The application features a modern, responsive UI built with React, TypeScript, and Tailwind CSS, with a powerful Spring Boot Java backend for better performance.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- Browse and search for movies
+- View detailed movie information and reviews
+- User account creation and authentication
+- Write and submit movie reviews
+- Responsive design that works on desktop and mobile
+- Modern UI with animations and transitions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3957edd8-1292-47da-b763-625b5c4a36dd) and start prompting.
+## Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+### Frontend
+- React with TypeScript
+- Vite for fast development and building
+- Tailwind CSS for styling
+- Shadcn UI components
+- React Router for navigation
+- React Query for API data fetching
 
-**Use your preferred IDE**
+### Backend
+- Java Spring Boot
+- Spring Data JPA for database access
+- H2 in-memory database (can be replaced with MySQL/PostgreSQL)
+- Spring Web for RESTful API
+- Spring Validation for request validation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
+- Node.js (v14+)
+- Java JDK 17+
+- Maven
 
-Follow these steps:
+### Running the Backend
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Build the project with Maven:
+   ```
+   mvn clean install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Run the Spring Boot application:
+   ```
+   mvn spring-boot:run
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4. The backend will start on http://localhost:8080/api
 
-**Edit a file directly in GitHub**
+### Running the Frontend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Install dependencies:
+   ```
+   npm install
+   ```
 
-**Use GitHub Codespaces**
+2. Start the development server:
+   ```
+   npm run dev
+   ```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3. The frontend will start on http://localhost:5173
 
-## What technologies are used for this project?
+## API Endpoints
 
-This project is built with:
+### Movies
+- `GET /api/movies` - Get all movies
+- `GET /api/movies/{id}` - Get movie by ID
+- `GET /api/movies?search={query}` - Search movies
+- `POST /api/movies` - Create a new movie (admin only)
+- `PUT /api/movies/{id}` - Update a movie (admin only)
+- `DELETE /api/movies/{id}` - Delete a movie (admin only)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Reviews
+- `GET /api/reviews` - Get all reviews
+- `GET /api/reviews/{id}` - Get review by ID
+- `GET /api/reviews/movie/{movieId}` - Get reviews for a movie
+- `POST /api/reviews` - Create a new review
+- `PUT /api/reviews/{id}` - Update a review
+- `DELETE /api/reviews/{id}` - Delete a review
 
-## How can I deploy this project?
+### Users
+- `POST /api/users/login` - User login
+- `POST /api/users` - User registration
+- `GET /api/users/{id}` - Get user by ID
 
-Simply open [Lovable](https://lovable.dev/projects/3957edd8-1292-47da-b763-625b5c4a36dd) and click on Share -> Publish.
+## License
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+MIT License
